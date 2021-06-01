@@ -2,9 +2,8 @@ from numpy.lib import type_check
 import tensorflow as tf
 from keras_preprocessing.image import ImageDataGenerator
 import numpy as np
-from keras.applications import ResNet50
+from tensorflow.keras.applications.resnet50 import ResNet50
 import matplotlib.pyplot as plt
-
 
 # Set your dataset directory
 # Directory Structure:
@@ -19,7 +18,7 @@ class_names = ['correctPosition','father_Legs','leftLean_posture','mother_leftLe
 TRAINING_DIR = "C:/buster/dataset2/test"
 VALIDATION_DIR = "C:/buster/dataset2/train"
 
-batch_size = 100
+batch_size = 50
 
 # Image Data Generator with Augmentation
 training_datagen = ImageDataGenerator(
@@ -59,7 +58,6 @@ for i in range(50):
 
 plt.show()
 
-## 문제의 구간
 # Load pre-trained base model.
 base_model = tf.keras.applications.ResNet50(input_shape=(224, 224, 3),
                                                include_top=False, weights='imagenet')
@@ -74,7 +72,7 @@ out_layer = tf.keras.layers.ReLU()(out_layer) # 7x7x128
 
 out_layer = tf.keras.layers.GlobalAveragePooling2D()(out_layer) # 128
 
-out_layer = tf.keras.layers.Dense(2, activation='softmax')(out_layer)
+out_layer = tf.keras.layers.Dense(8, activation='softmax')(out_layer)
 
 # Make New Model
 model = tf.keras.models.Model(base_model.input, out_layer)
@@ -84,11 +82,10 @@ model.summary()
 model.compile(loss='categorical_crossentropy',
               optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
               metrics=['accuracy'])
-
-print("hihihih---------------------------ttt----------------------------ihih")   
+   
 # Training
-history = model.evaluate(train_generator, epochs=25,
-                    validation_data=validation_generator, verbose=1)
+history = model.fit_generator(train_generator,epochs=50, validation_data=validation_generator, verbose=1)
+
 print("hihihih-------------------------------------------------------ihih")                
 print("\n Test Accuracy: %.4f" % (model.evaluate(validation_generator, class_names)))
 # Save the trained model
