@@ -1,9 +1,13 @@
-from numpy.lib import type_check
 import tensorflow as tf
-from keras_preprocessing.image import ImageDataGenerator
 import numpy as np
-from tensorflow.keras.applications.resnet50 import ResNet50
 import matplotlib.pyplot as plt
+from numpy.lib import type_check
+
+# from keras_preprocessing.image import ImageDataGenerator
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.applications.resnet50 import ResNet50
+
+from keras.callbacks import EarlyStopping
 
 physical_devices = tf.config.list_physical_devices('GPU')
 try:
@@ -23,10 +27,10 @@ except:
 # ------------/off_mask
 
 class_names = ['correctPosition','father_Legs','leftLean_posture','mother_leftLegs','mother_rightLegs','rightLean_posture','twist_leftLegs','twist_rightLegs']
-TRAINING_DIR = "C:/buster/dataset2/test"
-VALIDATION_DIR = "C:/buster/dataset2/train"
+TRAINING_DIR = "C:/buster/dataset2/train"
+VALIDATION_DIR = "C:/buster/dataset2/test"
 
-batch_size = 150
+batch_size = 25
 
 # Image Data Generator with Augmentation
 training_datagen = ImageDataGenerator(
@@ -77,9 +81,7 @@ base_model.trainable = False
 out_layer = tf.keras.layers.Conv2D(128, (1, 1), padding='SAME', activation=None)(base_model.output)
 out_layer = tf.keras.layers.BatchNormalization()(out_layer)
 out_layer = tf.keras.layers.ReLU()(out_layer) # 7x7x128
-
 out_layer = tf.keras.layers.GlobalAveragePooling2D()(out_layer) # 128
-
 out_layer = tf.keras.layers.Dense(8, activation='softmax')(out_layer)
 
 # Make New Model
@@ -90,10 +92,14 @@ model.summary()
 model.compile(loss='categorical_crossentropy',
               optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
               metrics=['accuracy'])
-   
+
+# 학습 중단 설정
+early_stopping_callback = EarlyStopping(monitor='val_loss',patience=20)   
+
 # Training
 history = model.fit(train_generator,epochs=50, validation_data=validation_generator, verbose=1)
 
+print("\n Acuuracy: %.4f" % (model.evaluate(train_generator,label)[1]))
+
 # Save the trained model
 model.save("saved_model.h5")
-          
