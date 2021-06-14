@@ -3,19 +3,31 @@ import numpy as np
 import matplotlib.pyplot as plt
 from numpy.lib import type_check
 
+#테스트셋 오차가 줄지 않으면 학습을 멈추게 하는 함수 호출
+from keras.callbacks import EarlyStopping
+#모델을 저장하기 위해 호출
+from keras.callbacks import ModelCheckpoint
+import os
+
+from PIL import Image, ImageFile
+ImageFile.LOAD_TRUNCATED_IMAGES=True
+
 # from keras_preprocessing.image import ImageDataGenerator
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.applications.resnet50 import ResNet50
 
 from keras.callbacks import EarlyStopping
 
-physical_devices = tf.config.list_physical_devices('GPU')
-try:
-  tf.config.experimental.set_memory_growth(physical_devices[0], True)
-except:
-  # Invalid device or cannot modify virtual devices once initialized.
-  pass
+# physical_devices = tf.config.list_physical_devices('GPU')
+# try:
+#   tf.config.experimental.set_memory_growth(physical_devices[0], True)
+# except:
+#   # Invalid device or cannot modify virtual devices once initialized.
+#   pass
 
+config = tf.compat.v1.ConfigProto()
+config.gpu_options.allow_growth = True 
+session = tf.compat.v1.Session(config=config)
 
 # Set your dataset directory
 # Directory Structure:
@@ -89,17 +101,36 @@ model = tf.keras.models.Model(base_model.input, out_layer)
 
 model.summary()
 
-model.compile(loss='categorical_crossentropy',
+with tf.device('/gpu:0'):
+  model.compile(loss='categorical_crossentropy',
               optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
               metrics=['accuracy'])
 
+# 모델 저장 폴더 만들기
+  MODEL_DIR = './model/'
+  if not os.path.exists(MODEL_DIR):
+    os.mkdir(MODEL_DIR)
+
+  modelpath="./model/{epoch:02d}-{val_loss:.4f}.hdf5" # 에포크 횟수와 테스트셋 오차 값을 이용하여 파일명 생성, 확장자 : hd5
+
+# 모델 업데이트 및 저장
+  checkpointer = ModelCheckpoint(filepath=modelpath, monitor='val_loss', verbose=1, save_best_only=True)
+
+# 학습 자동 중단 설정
+#patience=100 : 오차가 좋아지지 않아도 100번 기다림
+  early_stopping_callback = EarlyStopping(monitor='val_loss', patience=5)
+
+#모델 실행
+# model.fit(X, Y, validation_split=0.2, epochs=3500, batch_size=500, verbose=0, callbacks=[early_stopping_callback,checkpointer])
+
 # 학습 중단 설정
-early_stopping_callback = EarlyStopping(monitor='val_loss',patience=20)   
+# early_stopping_callback = EarlyStopping(monitor='val_loss',patience=20)   
 
-# Training
-history = model.fit(train_generator,epochs=50, validation_data=validation_generator, verbose=1)
 
-print("\n Acuuracy: %.4f" % (model.evaluate(train_generator,label)[1]))
+  # Training
+  model.fit(train_generator,epochs=40, validation_data=validation_generator, verbose=1,callbacks=[early_stopping_callback,checkpointer] )
+
+# print("\n Acuuracy: %.4f" % (model.evaluate(train_generator,class_names)[1]))
 
 # Save the trained model
-model.save("saved_model.h5")
+# model.save("saved_model.h5")
