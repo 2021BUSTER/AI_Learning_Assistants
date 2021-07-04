@@ -30,12 +30,13 @@ def Ardread_H(cnt): # return list [Ard1,Ard2]
         data = data+','+data2
         data = data.strip('\n')
         data = data.strip('\r')
+        print(data)
         splitData = data.split(',')
 
         for i in range(0,30) :
             splitData[i] = int(splitData[i])
 
-        splitData = np.reshape(splitData,(6,5))
+        splitData = np.reshape(splitData,(5,6))
         splitData = np.flip(splitData)
     else :
         print("read fail from _Ardread_") 
@@ -61,7 +62,7 @@ def Ardread_B(cnt): # return list [Ard1,Ard2]
                 data_9[i] = Data9[j]
                 j = j+1
 
-        data_9 = np.reshape(data_9,(6,3))
+        data_9 = np.reshape(data_9,(3,6))
 
     else : 
         print("read fail from _Ardread_")
