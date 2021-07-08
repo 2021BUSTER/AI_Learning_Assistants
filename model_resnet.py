@@ -28,12 +28,11 @@ TRAINING_DIR = "C:/buster/dataset/train"
 VALIDATION_DIR = "C:/buster/dataset/validation"
 TEST_DIR = "C:/buster/dataset/test"
 
-batch_size = 20
+batch_size = 60
 
 # Image Data Generator with Augmentation
 training_datagen = ImageDataGenerator(rescale=1./255)   # 0~1 사이의 값으로 만들어줌
 validation_datagen = ImageDataGenerator(rescale=1./255)
-test_datagen = ImageDataGenerator(rescale=1./255)
 
 # Reading images from directory and pass them to the model
 train_generator = training_datagen.flow_from_directory(
@@ -49,16 +48,10 @@ validation_generator = validation_datagen.flow_from_directory(
     VALIDATION_DIR,
     batch_size=batch_size,
     target_size=(224, 224),
-    class_mode='categorical'
+    class_mode='categorical',
+    shuffle=False
 )
 
-# test set
-test_generator = test_datagen.flow_from_directory(
-    TEST_DIR,
-    batch_size=batch_size,
-    target_size=(224, 224),
-    class_mode='categorical'
-)
 
 # Plotting the augmented images
 # img, label = next(train_generator)
@@ -92,24 +85,16 @@ with tf.device('/gpu:0'):
   checkpointer = ModelCheckpoint(filepath=modelpath, monitor='val_loss', verbose=1, save_best_only=True)
 
 # 학습 자동 중단 설정
-  early_stopping_callback = EarlyStopping(monitor='val_loss', patience=3)
+  early_stopping_callback = EarlyStopping(monitor='val_loss', patience=5)
 
   # Training
   model.fit(train_generator,
-    epochs=50, 
+    epochs=200, 
     validation_data=validation_generator, 
     verbose=1,
     callbacks=[early_stopping_callback,checkpointer] )
 
-# 예측 값과 실제 값의 비교
-  filenames = test_generator.filenames
-  nb_samples = len(filenames)
 
-  Y_prediction_idx = tf.argmax(model.predict_generator(test_generator, steps = nb_samples))
-  print(class_names[Y_prediction_idx],filenames)
-  # print(Y_prediction.size())
-  
-  # prediction = model.predict(test_generator)
   
 # for i in range(8):
 #     prediction = Y_prediction[i]
