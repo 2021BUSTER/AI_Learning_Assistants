@@ -1,6 +1,4 @@
 import tensorflow as tf
-import numpy as np
-import matplotlib.pyplot as plt
 import os
 
 #image header
@@ -9,14 +7,12 @@ ImageFile.LOAD_TRUNCATED_IMAGES=True
 
 #keras header
 from keras import models
-from keras import layers
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from keras.callbacks import EarlyStopping #테스트셋 오차가 줄지 않으면 학습을 멈추게 하는 함수 호출
 from keras.callbacks import ModelCheckpoint #모델을 저장하기 위해 호출
 
 #resnet header
 from tensorflow.keras.applications.resnet50 import ResNet50
-from tensorflow.python.keras.models import Sequential
 from tensorflow.python.keras.layers import Dense
 
 RESNET50_POOLING_AVERAGE = 'avg'
@@ -26,9 +22,9 @@ OBJECTIVE_FUNCTION = 'categorical_crossentropy'
 class_names = ['correctPosition','father_Legs','leftLean_posture','mother_leftLegs','mother_rightLegs','rightLean_posture','twist_leftLegs','twist_rightLegs']
 TRAINING_DIR = "C:/buster/dataset/train"
 VALIDATION_DIR = "C:/buster/dataset/validation"
-TEST_DIR = "C:/buster/dataset/test"
+# TEST_DIR = "C:/buster/dataset/test"
 
-batch_size = 60
+batch_size = 50
 
 # Image Data Generator with Augmentation
 training_datagen = ImageDataGenerator(rescale=1./255)   # 0~1 사이의 값으로 만들어줌
@@ -51,13 +47,6 @@ validation_generator = validation_datagen.flow_from_directory(
     class_mode='categorical',
     shuffle=False
 )
-
-
-# Plotting the augmented images
-# img, label = next(train_generator)
-# plt.figure(figsize=(20, 20))
-# a=np.array([1,2,3,4,5,6,7,8])
-
 
 #모델링
 model = models.Sequential()
@@ -85,7 +74,7 @@ with tf.device('/gpu:0'):
   checkpointer = ModelCheckpoint(filepath=modelpath, monitor='val_loss', verbose=1, save_best_only=True)
 
 # 학습 자동 중단 설정
-  early_stopping_callback = EarlyStopping(monitor='val_loss', patience=5)
+  early_stopping_callback = EarlyStopping(monitor='val_loss', patience=10)
 
   # Training
   model.fit(train_generator,
