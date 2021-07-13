@@ -17,7 +17,7 @@ class_names = ['correctPosition','father_Legs','leftLean_posture','mother_leftLe
 
 model = tf.keras.models.load_model('./model/148-0.5727.hdf5')
 
-test_image = image.load_img('dataset/test/mother_rightLegs/mother_rightLegs14.png', target_size = (224,224))
+test_image = image.load_img('dataset/test/mother_rightLegs/mother_rightLegs97.png', target_size = (224,224))
 test_image = image.img_to_array(test_image)
 test_image = test_image / 255
 
@@ -25,4 +25,3 @@ test_image = np.expand_dims(test_image, axis=0)
 predictions = model.predict(test_image)
 print(predictions[0])
 print(np.argmax(predictions[0]))
-# print (decode_predictions (predictions, top = 8) [0])
