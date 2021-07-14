@@ -19,10 +19,9 @@ RESNET50_POOLING_AVERAGE = 'avg'
 DENSE_LAYER_ACTIVATION = 'softmax'
 OBJECTIVE_FUNCTION = 'categorical_crossentropy'
 
-class_names = ['correctPosition','father_Legs','leftLean_posture','mother_leftLegs','mother_rightLegs','rightLean_posture','twist_leftLegs','twist_rightLegs']
+class_names = ['correctPosition','father_Legs','leftLean_posture','mother_leftLegs','mother_rightLegs','nobody','rightLean_posture','twist_leftLegs','twist_rightLegs']
 TRAINING_DIR = "C:/buster/dataset/train"
 VALIDATION_DIR = "C:/buster/dataset/validation"
-# TEST_DIR = "C:/buster/dataset/test"
 
 batch_size = 50
 
@@ -50,8 +49,8 @@ validation_generator = validation_datagen.flow_from_directory(
 
 #모델링
 model = models.Sequential()
-model.add(ResNet50(include_top = False, pooling = RESNET50_POOLING_AVERAGE, weights = 'imagenet',input_shape=(224,224,3), classes=8))
-model.add(Dense(8, activation = DENSE_LAYER_ACTIVATION)) # add softmax
+model.add(ResNet50(include_top = False, pooling = RESNET50_POOLING_AVERAGE, weights = 'imagenet',input_shape=(224,224,3), classes=9))
+model.add(Dense(9, activation = DENSE_LAYER_ACTIVATION)) # add softmax
 
 # Say not to train first layer (ResNet) model as it is already trained
 model.layers[0].trainable = False
@@ -74,7 +73,7 @@ with tf.device('/gpu:0'):
   checkpointer = ModelCheckpoint(filepath=modelpath, monitor='val_loss', verbose=1, save_best_only=True)
 
 # 학습 자동 중단 설정
-  early_stopping_callback = EarlyStopping(monitor='val_loss', patience=10)
+  early_stopping_callback = EarlyStopping(monitor='val_loss', patience=8)
 
   # Training
   model.fit(train_generator,
@@ -83,8 +82,6 @@ with tf.device('/gpu:0'):
     verbose=1,
     callbacks=[early_stopping_callback,checkpointer] )
 
-
-  
 # for i in range(8):
 #     prediction = Y_prediction[i]
 #     print("실제: {:.3f}, 예상: {:.3f}".format(class_name, prediction))
