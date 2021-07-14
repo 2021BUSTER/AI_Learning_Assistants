@@ -19,9 +19,9 @@ import sqlite3
 from sqlite3.dbapi2 import Date
 import datetime
 
-class_names = ['correctPosition','father_Legs','leftLean_posture','mother_leftLegs','mother_rightLegs','rightLean_posture','twist_leftLegs','twist_rightLegs']
+class_names = ['correctPosition','father_Legs','leftLean_posture','mother_leftLegs','mother_rightLegs','nobody','rightLean_posture','twist_leftLegs','twist_rightLegs']
 
-model = tf.keras.models.load_model('./model/98-0.8714.hdf5')
+model = tf.keras.models.load_model('./model/182-0.5622.hdf5')
 
 file = '//raspberrypi/pi/realTimeImage/realTime_image.png'
 
@@ -47,14 +47,15 @@ while True:
         conn = sqlite3.connect("C:\\Users\\ESE\\anaconda3\\envs\\buster\\flask-live-charts\\DB2.db")
         cur = conn.cursor() # 커서 열기
         idx=int(idx)
-        if idx == 0: v=4
-        if idx == 1: v=5
-        if idx == 2: v=7
-        if idx == 3: v=8
-        if idx == 4: v=1
-        if idx == 5: v=2
-        if idx == 6: v=6
-        if idx == 7: v=3
+        if idx == 0: v=3
+        if idx == 1: v=4
+        if idx == 2: v=6
+        if idx == 3: v=7
+        if idx == 4: v=0
+        if idx == 6: v=1
+        if idx == 7: v=5
+        if idx == 8: v=2
+        if idx == 5: v=8
         
 
         cur.execute("INSERT INTO pose (posture,datetime) VALUES(?,?)",(v,time.time()*1000))
